@@ -13,8 +13,8 @@ from io import BytesIO
 from matplotlib.backends.backend_agg import FigureCanvasAgg
 import base64
 
-import os
-import pandas as pd
+#import os
+#import pandas as pd
 
 app = Flask(__name__)
 app.secret_key = 'your-secret-key'  # 设置用于会话加密的密钥
