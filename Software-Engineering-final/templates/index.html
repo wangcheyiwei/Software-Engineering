@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>项目介绍</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-image: url('https://ts1.cn.mm.bing.net/th/id/R-C.4f191ba5ee0e74dee0f5f3f80ea85480?rik=iicJ8awRB81ZtA&riu=http%3a%2f%2fpic.ntimg.cn%2ffile%2f20170926%2f3046502_170925905000_2.jpg&ehk=rnDADM3gWiFDOGYreLHIaZE2OOq8gQAYNY2IkGSiscg%3d&risl=&pid=ImgRaw&r=0');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+        
+        .overlay {
+            background-color: rgba(0, 0, 0, 0.5);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            padding: 20px;
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            margin: 20px auto;
+        }
+        
+        .content {
+            width: 100%;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .content h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        
+        .content p {
+            color: #666;
+            margin-bottom: 20px;
+        }
+        
+        .video-container, .location-container, .data-container {
+            width: 30%;
+            margin-bottom: 20px;
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .video-container video, .location-container img {
+            width: 100%;
+            height: auto;
+            border-radius: 5px;
+        }
+        
+        .location-title, .data-title, .video-title {
+            color: #333;
+            margin-top: 10px;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .flex-container {
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .top-right {
+            align-self: flex-end;
+            margin-top: 20px;
+        }
+        
+        .top-right ul {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .top-right li {
+            display: inline;
+            margin-left: 10px;
+        }
+        
+        .top-right li a {
+            color: white;
+            text-decoration: none;
+            padding: 10px 20px;
+            background-color: #FFA500;
+            border-radius: 3px;
+            transition: background-color 0.3s;
+        }
+        
+        .top-right li a:hover {
+            background-color: #FFD700;
+        }
+        
+        .progress-container {
+            margin-bottom: 10px;
+        }
+        
+        .progress-bar {
+            background-color: #ddd;
+            border-radius: 5px;
+            overflow: hidden;
+            position: relative;
+            height: 20px;
+        }
+        
+        .progress {
+            height: 100%;
+            border-radius: 5px;
+            text-align: center;
+            line-height: 20px;
+            color: white;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        
+        .progress-bar[data-color="green"] .progress {
+            background-color: #4caf50;
+        }
+        
+        .progress-bar[data-color="red"] .progress {
+            background-color: #f44336;
+        }
+        
+        .progress-bar[data-color="blue"] .progress {
+            background-color: #2196f3;
+        }
+        
+        .progress-label {
+            padding-right: 10px;
+            text-align: right;
+            color: #000;
+            line-height: 20px;
+            position: relative;
+            z-index: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="overlay">
+        <div class="top-right">
+            <ul>
+                <li><a href="/register">注册</a></li>
+                <li><a href="/login">登录</a></li>
+            </ul>
+        </div>
+        <div class="container">
+            <div class="content">
+                <h1>项目介绍</h1>
+                <p>这是一个简单的项目介绍页面。</p>
+                <p>智慧可视化系统渔场管理系统是一个用于管理渔场和养殖活动的系统。它提供了各种功能和工具,以帮助管理员、养殖户和普通用户有效地管理和监控渔场的运营情况。</p>
+                <p>该系统使用现代的可视化技术,将渔场的数据和信息以直观的方式展示,使用户能够轻松了解渔场的状态、水质、鱼类生长情况等重要指标。同时,系统还提供了数据分析和报告功能,帮助用户做出科学决策和优化养殖管理。</p>
+                <p>无论是管理员、养殖户还是普通用户,都可以通过系统进行注册和登录,并根据其用户类型获得相应的功能和权限。</p>
+            </div>
+            <div class="flex-container">
+                <div class="video-container">
+                    <video controls autoplay loop>
+                        <source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                    <div class="video-title">视频播放</div>
+                </div>
+                <div class="data-container">
+                    <div class="progress-container">
+                        <div class="progress-bar" data-color="blue">
+                            <div class="progress" style="width: 80%;">25.90 V</div>
+                            <div class="progress-label">电池电压 (V)</div>
+                        </div>
+                    </div>
+                    <div class="progress-container">
+                        <div class="progress-bar" data-color="blue">
+                            <div class="progress" style="width: 70%;">34.16 ‰</div>
+                            <div class="progress-label">盐度 (‰)</div>
+                        </div>
+                    </div>
+                    <div class="progress-container">
+                        <div class="progress-bar" data-color="red">
+                            <div class="progress" style="width: 0%;">0.00 mg/L</div>
+                            <div class="progress-label">溶解氧 (mg/L)</div>
+                        </div>
+                    </div>
+                    <div class="progress-container">
+                        <div class="progress-bar" data-color="blue">
+                            <div class="progress" style="width: 20%;">2.05 NTU</div>
+                            <div class="progress-label">浊度 (NTU)</div>
+                        </div>
+                    </div>
+                    <div class="progress-container">
+                        <div class="progress-bar" data-color="green">
+                            <div class="progress" style="width: 83%;">8.37</div>
+                            <div class="progress-label">pH</div>
+                        </div>
+                    </div>
+                    <div class="progress-container">
+                        <div class="progress-bar" data-color="blue">
+                            <div class="progress" style="width: 50%;">15 °C</div>
+                            <div class="progress-label">水温 (°C)</div>
+                        </div>
+                    </div>
+                    <div class="data-title">水文数据展示</div>
+                </div>
+                <div class="location-container">
+                    <img src="https://tse2-mm.cn.bing.net/th/id/OIP-C.VdM9ELXc_aUFO_gPaxp8agAAAA?rs=1&pid=ImgDetMain" alt="渔场地理位置">
+                    <div class="location-title">渔场地理位置展示</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

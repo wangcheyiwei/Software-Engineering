@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>主页面</title>
+</head>
+<body>
+    <h1>主页面</h1>
+    <h3>欢迎！</h3>
+    <p>你已成功注册或登录。</p>
+    {% if role == 'user' %}
+        <a href="/user/button1">按钮1</a>
+        <a href="/user/button2">按钮2</a>
+    {% elif role == 'admin' %}
+        <a href="/admin/button1">按钮1</a>
+        <a href="/admin/button2">按钮2</a>
+        <a href="/admin/button3">按钮3</a>
+    {% else %}
+        <p>未知角色，无法显示按钮。</p>
+    {% endif %}
+    <a href="/logout">注销</a>
+</body>
+</html>

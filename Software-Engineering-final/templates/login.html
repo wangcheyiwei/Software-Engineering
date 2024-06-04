@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <style>
+    body {
+      background: linear-gradient(#141e30, #243b55);
+      background-size: 100% 130%;
+    }
+
+    #login_box {
+      width: 20%;
+      height: 400px;
+      background-color: #00000060;
+      margin: auto;
+      margin-top: 10%;
+      text-align: center;
+      border-radius: 10px;
+      padding: 50px 50px;
+    }
+
+    h2 {
+      color: #ffffff90;
+      margin-top: 5%;
+    }
+    label {
+      color: #ffffff90;
+    }
+
+    #input-box {
+      margin-top: 5%;
+    }
+
+    span {
+      color: #fff;
+    }
+
+    input {
+      border: 0;
+      width: 60%;
+      font-size: 15px;
+      color: #fff;
+      background: transparent;
+      border-bottom: 2px solid #fff;
+      padding: 5px 10px;
+      outline: none;
+      margin-top: 10px;
+    }
+
+    button {
+      margin-top: 50px;
+      width: 60%;
+      height: 30px;
+      border-radius: 10px;
+      border: 0;
+      color: #fff;
+      text-align: center;
+      line-height: 30px;
+      font-size: 15px;
+      background-image: linear-gradient(to right, #30cfd0, #330867);
+    }
+
+    #sign_up {
+      margin-top: 45%;
+      margin-left: 60%;
+    }
+
+#mybox {
+  /* 使用 flex 布局 */
+  display: flex;
+  flex-direction: row; /* 水平方向排列 */
+  justify-content: space-around; /* 水平方向均匀分布 */
+  align-items: center; /* 垂直方向居中对齐 */
+}
+
+#mybox div {
+  display: flex;
+  flex-direction: row; /* 水平方向排列 */
+  align-items: center; /* 垂直方向居中对齐 */
+}
+
+#mybox div label {
+  font-size: 13px; /* 设置字体大小为 16 像素 */
+  display: inline-block; /* 将标签调整为行内块元素 */
+  margin-left: 4px; /* 添加一些间距，使其与 input 元素分开 */
+  white-space: nowrap; /* 防止文本换行 */
+}
+
+    a {
+      color: #b94648;
+    }
+
+  </style>
+</head>
+
+<body>
+  <form action="/login" method="POST">
+    <div id="login_box">
+       <h2>LOGIN</h2>
+      <div id="mybox">
+        <div>
+         <input type="radio" id="admin" name="user_type" value="0" checked="true"/>
+        <label>管理员</label>
+
+        <input type="radio" id="farmer" name="user_type" value="1" />
+        <label>养殖户</label>
+
+        <input type="radio" id="user" name="user_type" value="2"  />
+        <label>普通用户</label>
+        </div>
+      </div>
+      <div id="input_box">
+        <input type="text" id="username" name="username" placeholder="请输入用户名">
+      </div>
+      <div class="input_box">
+        <input type="password" id="password" name="password" placeholder="请输入密码">
+      </div>
+
+      <button>登录</button><br>
+    </div>
+  </form>
+</body>
+</html>

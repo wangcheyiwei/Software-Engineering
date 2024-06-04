@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>海洋牧场大数据可视化系统</title>
+    <style>
+        body, h1, h2, h3, h4, h5, h6 {
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            background-image: url('https://img1.baidu.com/it/u=2618041115,190904913&fm=253&fmt=auto&app=138&f=JPEG?w=889&h=500'); /* 修复了URL */
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-position: center;
+            /*height: 100vh;*/
+            display: flex;
+            flex-direction: column; /* 修改为column以垂直排列内容 */
+            justify-content: center;
+            align-items: center;
+        }
+        h1 {
+            margin-top: 20px; /* 添加顶部边距 */
+            text-align: center;
+        }
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            display: flex;
+            flex-wrap: wrap;
+            margin-top: 20px; /* 添加容器的顶部边距 */
+        }
+        .column {
+            flex: 1;
+            min-width: 300px;
+            margin: 10px;
+            padding: 20px;
+            background-color: rgba(13, 43, 81, 0.7);
+            border-radius: 5px;
+            color: #fff;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .stats {
+            list-style: none;
+            padding: 0;
+        }
+        .stats li {
+            margin-bottom: 10px;
+        }
+        .stats strong {
+            margin-right: 10px;
+        }
+        .chart-placeholder {
+            height: 200px; /* Adjust as needed */
+            background-color: rgba(255, 255, 255, 0.1);
+            border: 1px dashed #fff;
+            border-radius: 5px;
+            text-align: center;
+            line-height: 200px;
+            margin-bottom: 20px;
+        }
+        .table-bordered {
+            width: 100%; /* 表格宽度 */
+            border-collapse: collapse; /* 边框合并 */
+        }
+        .table-bordered th,
+        .table-bordered td {
+            background-color: transparent; 
+            border-color: #ddd; /* 单元格边框颜色 */
+            text-align: left; /* 文本左对齐 */
+            padding: 8px; /* 单元格内边距 */
+        }
+        .table-bordered th {
+            background-color: transparent; /* 表头背景色 */
+            text-align: center; /* 表头文本居中 */
+        }
+        .column img {
+            max-width: 100%;
+            height: auto;
+            display: block;  /* 去掉图片底部的空隙 */
+        }
+        .data-cards {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px; /* 设置卡片之间的间距 */
+        }
+
+        .data-card {
+            background-color: transparent; /* 设置为半透明白色背景，根据需要调整透明度 */
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1); /* 卡片阴影 */
+            padding: 30px; /* 卡片内边距 */
+            text-align: center; /* 文本居中 */
+            border-radius: 10px; /* 卡片圆角 */
+            border: 1px solid #ddd; /* 添加边框以提高可读性 */
+            width: 150px; /* 卡片宽度 */
+        }
+
+        .data-card h3 {
+            margin: 0;
+            color: #fff; /* 标题颜色 */
+            font-size: 16px; /* 标题字号 */
+        }
+
+        .data-card p {
+            margin: 10px 0 0 0;
+            color: #fff; /* 数值颜色 */
+            font-size: 24px; /* 数值字号 */
+            font-weight: bold; /* 数值字体加粗 */
+        }
+        /* 为h2标签后的内容添加间距 */
+        h2 {
+            margin-bottom: 20px; /* 在h2标签下方添加20px的外边距 */
+        }
+
+        /* 或者，如果您想要为特定列中的h2标签后的内容添加间距，可以这样做 */
+        .column h2 {
+            margin-bottom: 20px; /* 仅对.column类中的h2标签后的内容添加间距 */
+        }
+
+        /* 如果您想要为特定h2标签后的内容添加间距，可以为该h2标签添加类名或ID */
+        h2.title-with-space {
+            margin-bottom: 20px; /* 为具有title-with-space类的h2标签后的内容添加间距 */
+        }
+
+        /* 为.data-card类中的h3标签后的内容添加间距 */
+        .data-card h3 {
+            margin-bottom: 10px; /* 在.data-card中的h3标签下方添加10px的外边距 */
+        }
+        /* 为.column类中的每个标题和列表项设置外边距 */
+        .column h2,
+        .column ul.stats,
+        .column .data-cards,
+        .column table.table-bordered {
+            margin-bottom: 20px; /* 在每个元素下方添加20px的外边距 */
+        }
+
+        /* 如果您想要为特定的内容设置不同的间距，可以为它们添加特定的类名或ID，并在这里设置 */
+        .column .specific-content-class {
+            margin-bottom: 30px; /* 为具有specific-content-class类的元素添加30px的外边距 */
+        }
+        .column-section {
+            margin-bottom: 20px; /* 标题和内容块之间的间距 */
+            padding: 20px; /* 边框内边距 */
+            border: 1px solid #c0d8f0; /* 浅蓝色边框 */
+            border-radius: 5px; /* 边框圆角 */
+            background-color: #f0f8ff; /* 浅蓝色背景 */
+        }
+    </style>
+</head>
+<body>
+    <h1>海洋牧场大数据可视化系统</h1>
+    <div class="container">
+    <div class="column">
+        <h2>数据总量</h2>
+    <div class="data-cards">
+        <div class="data-card">
+            <h3>数据总量</h3>
+            <p>0</p>
+        </div>
+        <div class="data-card">
+            <h3>今日处理</h3>
+            <p>8</p>
+        </div>
+        <div class="data-card">
+            <h3>今日新增</h3>
+            <p>8</p>
+        </div>
+    </div>
+        <h2>硬件信息</h2>
+        <ul class="stats">
+            <li><strong>进程总量:</strong> 999</li>
+            <li><strong>磁盘使用情况:</strong> 已使用1000T / 剩余1500T</li>
+            <li><strong>CPU运行状态:</strong> 正常</li>
+            <li><strong>内存运行状态:</strong> 正常</li>
+            <li><strong>GPU运行状态:</strong> 正常</li>
+        </ul>
+    </div>
+    <div class="column">
+        <h2>数据类型统计</h2>
+        <a href="https://sm.ms/image/aP5bNIoGkzxjFHd" target="_blank">
+            <img src="https://s2.loli.net/2024/05/30/aP5bNIoGkzxjFHd.png" alt="描述文字">
+        </a>
+        <a href="https://sm.ms/image/qBefPHsGgkczaTp" target="_blank">
+            <img src="https://s2.loli.net/2024/05/30/qBefPHsGgkczaTp.png" alt="描述文字">
+        </a>
+        <!-- 其他内容 -->
+    </div>
+    <div class="column">
+        <h2>传感器信息</h2>
+            <!-- 添加有线表格 -->
+            <table class="table-bordered">
+                <!-- 表头，第一行居中显示“单位：分钟” -->
+                <tr>
+                    <th colspan="4">单位：分钟</th> <!-- 合并四列 -->
+                </tr>
+                <tr>
+                    <th>设备</th>
+                    <th>编号</th>
+                    <th>类型</th>
+                    <th>大小</th>
+                </tr>
+                <tr>
+                    <td>水底摄像头</td>
+                    <td>video-1</td>
+                    <td>H.264</td>
+                    <td>4Mb</td>
+                </tr>
+                <tr>
+                    <td>水底摄像头</td>
+                    <td>video-2</td>
+                    <td>4CIF</td>
+                    <td>128kb</td>
+                </tr>
+                <tr>
+                    <td>水面摄像头</td> 
+                    <td>video-3</td>
+                    <td>H.264</td>
+                    <td>100b</td>
+                </tr>
+                <tr>
+                    <td>云台</td>
+                    <td>holder-1</td> 
+                    <td>H.264</td>
+                    <td>1kb</td>
+                </tr>
+                <tr>
+                    <td>声呐</td>
+                    <td>sonar-1</td>
+                    <td>CSV</td>
+                    <td>10kb</td>
+                </tr>
+                <tr>
+                    <td>传感器</td>
+                    <td>sensor-1</td>
+                    <td>TXT</td>
+                    <td>2kb</td>
+                </tr>
+                <tr>
+                    <td>气象站</td>
+                    <td>meteor-1</td>
+                    <td>TXT</td>
+                    <td>500b</td>
+                </tr>
+            </table>
+        <h2>数据库统计</h2>
+        <ul class="stats">
+            <li><strong>数据库名称:</strong> MySQL，HBase</li>
+            <li><strong>查询次数:</strong> 567890</li>
+            <li><strong>成功次数:</strong> 567890</li>
+            <li><strong>查询时间:</strong> 0.1s</li>
+        </ul>
+    </div>
+</div>
+</body>
+</html>

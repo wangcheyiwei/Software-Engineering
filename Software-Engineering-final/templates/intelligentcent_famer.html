@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>智能中心 - intelligentcenter</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background-image: url('https://img1.baidu.com/it/u=2618041115,190904913&fm=253&fmt=auto&app=138&f=JPEG?w=889&h=500');
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-position: center;
+            height: 100vh;
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            align-items: center;
+            color: #fff;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+        }
+    
+        .container {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: flex-start;
+            width: 80%;
+        }
+    
+        .left, .center, .right {
+            flex: 1;
+            margin: 0 1rem;
+        }
+    
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+    
+        p {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+        }
+    
+        a {
+            display: inline-block;
+            padding: 0.8rem 1.5rem;
+            background-color: rgba(255, 255, 255, 0.2);
+            color: #fff;
+            text-decoration: none;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+    
+        a:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+    
+        .weather-container, .shouldbe-container, .threshold-container , .dashboard-container {
+            margin-top: 2rem;
+            padding: 1rem;
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+        }
+    
+        .weather-item, .shouldbe-item, .threshold-item {
+            margin-bottom: 0.5rem;
+            font-size: 1rem;
+        }
+
+       
+
+        .dashboard-container h2 {
+            font-size: 1.5em;
+            margin-bottom: 20px;
+        }
+
+        .dashboard-container text {
+            font-family: Arial, sans-serif;
+            fill: #333;
+        }
+    </style>
+</head>
+<body>
+    
+    
+
+    
+    
+
+
+    <div class="container">
+        <!-- 左侧模块 -->
+        <div class="left">
+            <!-- 新增气象数据区域 -->
+            <div class="weather-container">
+                <h2>当前天气信息</h2>
+                <div class="weather-item">气温: <span id="temperature1">{{ temperature }}</span>℃</div>
+                <div class="weather-item">风向: <span id="winddirection">{{ wind_direction }}</span></div>
+                <div class="weather-item">风速: <span id="windspeed">{{ wind_speed }}</span>m/s</div>
+                <div class="weather-item">湿度: <span id="humidity1">{{ humidity }}</span>%</div>
+                <div class="weather-item">空气质量: <span id="airquality">{{ air_quality }}</span></div>
+            </div>
+            
+        </div>
+        
+        <!-- 中间模块 -->
+        <div class="center">
+            <header>
+                <div class="header-wrapper">
+                  
+                  <div class="header-center">
+                    <h1>智能中心</h1>
+                    <nav>
+                        <a href="/famer">返回养殖户页面</a>
+                    </nav>
+                  </div>
+                 
+                </div>
+              </header>
+            <main>
+                
+                
+                
+
+                <div class="shouldbe-container">
+                    <h2>环境指标</h2>
+                    <table>
+                        <tr>
+                            <th>指标</th>
+                            <th>当前值</th>
+                            <th>阈值</th>
+                        </tr>
+                        <tr>
+                            <td>水温</td>
+                            <td>{{ water_temperature }}°C</td>
+                            <td><span id="water-temperature-threshold">{{ water_temperature_threshold }}</span>°C</td>
+                        </tr>
+                        <tr>
+                            <td>pH 值</td>
+                            <td>{{ ph }}</td>
+                            <td><span id="ph-threshold">{{ ph_threshold }}</span></td>
+                        </tr>
+                        <tr>
+                            <td>浊度</td>
+                            <td>{{ turbidity }} NTU</td>
+                            <td><span id="turbidity-threshold">{{ turbidity_threshold }}</span> NTU</td>
+                        </tr>
+                    </table>
+                </div>
+
+                <!-- 新增警报推送区域 -->
+                <p id="alarm-message" style="color: red;">{{ alarm_message }}</p>
+
+                <!-- 新增自定义阈值推送区域 -->
+                <div class="threshold-container">
+                    <h2>自定义报警阈值</h2>
+                    <form method="post" action="{{ url_for('intelligentcenter_plus') }}" onsubmit="return updateThresholdDisplay()">
+                        <div class="threshold-item">
+                            水温阈值: <span id="water-temperature-threshold-display">{{ water_temperature_threshold }}</span>℃
+                            <input type="text" name="water_temperature_threshold" id="water-temperature-threshold-input" value="{{ water_temperature_threshold }}" style="display: none;">
+                        </div>
+                        <div class="threshold-item">
+                            pH阈值: <span id="ph-threshold-display">{{ ph_threshold }}</span>
+                            <input type="text" name="ph_threshold" id="ph-threshold-input" value="{{ ph_threshold }}" style="display: none;">
+                        </div>
+                        <div class="threshold-item">
+                            浊度阈值: <span id="turbidity-threshold-display">{{ turbidity_threshold }}</span> NTU
+                            <input type="text" name="turbidity_threshold" id="turbidity-threshold-input" value="{{ turbidity_threshold }}" style="display: none;">
+                        </div>
+                        <button type="button" onclick="toggleThresholdInput()">编辑</button>
+                        <button type="submit">保存</button>
+                    </form>
+                </div>
+            </main>
+        </div>
+
+       <!-- 右侧模块 -->
+       <div class="right">
+        <!-- 可以添加右侧的其他内容 -->
+        <div class="dashboard-container">
+            <h2>环境得分</h2>
+            <div id="dashboard"></div>
+        </div>
+
+    </div>
+    </div>
+    
+    <script src="https://d3js.org/d3.v6.min.js"></script>
+    <script>
+        // 获取后端传来的数据
+        const score = {{ score }};
+    
+        // 绘制仪表盘
+        function drawDashboard() {
+            const width = 300;
+            const height = 250;
+    
+            const svg = d3.select("#dashboard")
+                .append("svg")
+                .attr("width", width)
+                .attr("height", height);
+    
+            // 绘制仪表盘半圆
+            const gauge = svg.append("g")
+                .attr("transform", `translate(${width / 2}, ${height / 2})`);
+    
+            const radius = Math.min(width, height) / 2 * 0.8;
+            const arc = d3.arc()
+                .innerRadius(radius * 0.6)
+                .outerRadius(radius)
+                .startAngle(-Math.PI / 2)
+                .endAngle(Math.PI / 2);
+    
+            // 使用渐变色绘制表盘
+            const color = d3.interpolateRgb("#e74c3c", "#2ecc71")(score / 100);
+            gauge.append("path")
+                .attr("d", arc)
+                .attr("fill", color)
+                .attr("stroke", "#555")
+                .attr("stroke-width", 4);
+    
+            // 绘制指针
+            const needleLength = radius * 0.7;
+            const needlePath = `M ${-needleLength * 0.1} ${-needleLength}
+                                L ${needleLength * 0.1} ${-needleLength}
+                                L 0 0`;
+            gauge.append("path")
+                .attr("d", needlePath)
+                .attr("fill", "#555")
+                .attr("transform", `rotate(${180 * score / 100 - 90})`);
+    
+            // 绘制刻度
+            const ticks = [0, 25, 50, 75, 100];
+            const tickGroup = gauge.append("g")
+                .attr("transform", `translate(0, ${radius * 0.8})`);
+            tickGroup.selectAll("line")
+                .data(ticks)
+                .enter()
+                .append("line")
+                .attr("x1", (d) => radius * 0.6 * Math.cos(Math.PI * d / 50 - Math.PI / 2))
+                .attr("y1", (d) => radius * 0.6 * Math.sin(Math.PI * d / 50 - Math.PI / 2))
+                .attr("x2", (d) => radius * 0.7 * Math.cos(Math.PI * d / 50 - Math.PI / 2))
+                .attr("y2", (d) => radius * 0.7 * Math.sin(Math.PI * d / 50 - Math.PI / 2))
+                .attr("stroke", "#555")
+                .attr("stroke-width", 3);
+    
+            gauge.append("text")
+                .attr("text-anchor", "middle")
+                .attr("dy", "0.3em")
+                .style("font-size", "4em")
+                .style("font-weight", "bold")
+                .text(`${score.toFixed(2)}`);
+    
+            gauge.append("text")
+                .attr("text-anchor", "middle")
+                .attr("dy", "2.8em")
+                .style("font-size", "2em")
+                .text("环境得分");
+        }
+    
+        // 调用绘制仪表盘的函数
+        drawDashboard();
+    </script>
+
+        <script>
+
+let isThresholdEditing = false;
+
+function toggleThresholdInput() {
+    isThresholdEditing = !isThresholdEditing;
+    document.querySelectorAll('.threshold-item input').forEach(input => {
+        input.style.display = isThresholdEditing ? 'inline' : 'none';
+        input.previousElementSibling.style.display = isThresholdEditing ? 'none' : 'inline';
+        input.readOnly = !isThresholdEditing;
+    });
+    //document.querySelector('.threshold-container button[type="button"]').textContent = isThresholdEditing ? '保存' : '编辑';
+}
+
+function submitForm() {
+    if (isThresholdEditing) {
+        document.getElementById('water-temperature-threshold-display').textContent = document.getElementById('water-temperature-threshold-input').value;
+        document.getElementById('ph-threshold-display').textContent = document.getElementById('ph-threshold-input').value;
+        document.getElementById('turbidity-threshold-display').textContent = document.getElementById('turbidity-threshold-input').value;
+        document.getElementById('threshold-form').submit();
+    }
+}
+
+// Prevent the form from automatically submitting on changes
+document.getElementById('threshold-form').addEventListener('submit', function(event) {
+    if (!isThresholdEditing) {
+        event.preventDefault();
+    }
+});
+
+            function checkAlarm() {
+                const temperatureElement = document.getElementById('temperature1');
+                const humidityElement = document.getElementById('humidity1');
+                const airQualityElement = document.getElementById('airquality');
+                const alarmMessageElement = document.getElementById('alarm-message');
+    
+                const temperature = parseFloat(temperatureElement.textContent);
+                const humidity = parseFloat(humidityElement.textContent);
+                const airQuality = parseFloat(airQualityElement.textContent);
+    
+                const temperatureThreshold = parseFloat(document.getElementsByName('temperature_threshold')[0].value);
+                const humidityThreshold = parseFloat(document.getElementsByName('humidity_threshold')[0].value);
+                const airQualityThreshold = parseFloat(document.getElementsByName('air_quality_threshold')[0].value);
+    
+                if (temperature > temperatureThreshold || humidity > humidityThreshold || airQuality > airQualityThreshold) {
+                    alarmMessageElement.textContent = '警告:部分环境指标超出安全范围!';
+                } else {
+                    alarmMessageElement.textContent = '';
+                }
+            }
+
+            document.querySelectorAll('.threshold-item input').forEach(input => {
+                input.addEventListener('input', updateThresholdDisplay);
+            });
+    
+            setInterval(checkAlarm, 10000);
+        </script>
+
+    
+</body>
+</html>

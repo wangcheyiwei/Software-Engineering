@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background-image: url('https://img1.baidu.com/it/u=2618041115,190904913&fm=253&fmt=auto&app=138&f=JPEG?w=889&h=500');
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-position: center;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: #fff;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+        }
+        h1 {/*标题*/
+            font-size: 3rem;
+            margin-bottom: 0rem;
+        }
+        h2 {
+            text-align: center;
+        }
+        a {
+            display: inline-block;
+            padding: 0.8rem 1.5rem;
+            background-color: rgba(255,255,255, 0.5);
+            color: #fff;
+            text-decoration: none;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+        input{
+            width:11.5rem;
+            height: 1.5rem;
+        }
+        #species_select{
+            width:12rem;
+            height:2rem;
+        }
+
+        .column a:hover{ background-color: rgba(90,206,250);}
+
+        .tabs {
+            position: relative;
+            height: 99%;
+            width:98%;
+            clear: both;
+            margin: 25px 0;
+        }
+        .tab {
+            float: left;
+        }
+        .tab label {
+            background:rgba(225,225,225,0.5);
+            padding: 15px;
+            border: 1px solid #ccc;
+            margin-left: -1px;
+            position: relative;
+            left: 1px;
+            border-radius: 4px;
+        }
+          .tab label:hover{
+            background-color: #1E90FF;
+            color: 	white;
+        }
+        .tab [type=radio] {
+            display: none;
+        }
+        .content {
+            position: absolute;
+            top:30px;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            height: 95%;
+            background-image: url('https://img1.baidu.com/it/u=2618041115,190904913&fm=253&fmt=auto&app=138&f=JPEG?w=889&h=500');
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-position: center;
+            border: 1px solid #ccc;
+        }
+        [type=radio]:checked ~ label {
+            background: rgba(90,206,250,1);
+            border-bottom: 1px solid white;
+            z-index: 4;
+        }
+        [type=radio]:checked ~ label ~ .content {
+            z-index: 3;
+        }
+        /*鱼信息内部的tab图的图层要重新设置*/
+        .page [type=radio]:checked ~ label {
+            background: rgb(65,105,255);
+            border-bottom: 1px solid white;
+            z-index: 2;
+        }
+        .page [type=radio]:checked ~ label ~ .content {
+            z-index: 1;
+        }
+        /*水文表格的容器*/
+        .table_container{
+            padding: 50px;
+            display: flex;
+            flex-direction:column;
+            justify-content:center;
+            align-items: center;
+        }
+        .table_container a{ margin: 50px; }
+
+        /* 网页分为两栏*/
+        .column {
+          padding-top:3%;
+          float: left;
+          width: 48%;
+          height:100%;
+          margin-right:5px;
+        }
+        .page {
+            display: none;
+        }
+
+        #pieHuan {
+            width: 600px;
+            height: 400px;
+            margin: 0 auto;
+        }
+        .fish_chart{
+            width: 700px;
+            height:400px;
+        }
+        .fish_input_box{
+            padding-left: 90px;
+            fontSize:20px;
+        }
+        #fish_submit_button{
+            height:40px;
+            width: 10rem;
+            font-size: 17px;
+            display: flex;
+            justify-content: center; /* 水平居中 */
+            border: none;
+            padding-bottom: 5px;
+            margin-top: 10px;
+            margin-left: 210px;
+            background-color: rgba(255, 255, 255, 0.5);
+            color: #fff;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+
+        }
+        #fish_submit_button:hover{background:rgba(90,206,250);}
+
+
+    </style>
+</head>
+<body>
+    <header>
+        <h1>水下系统</h1>
+    </header>
+    <a href="/admin" style="position: absolute;top: 20px;left: 20px;background:	#007bff;"
+       onmouseover="this.style.backgroundColor='#0056b3'"  onmouseout="this.style.backgroundColor='#4169E1';">返回管理员主页</a>
+    <!--标签页-->
+    <div class="tabs">
+        <div class="tab" >
+            <input type="radio" id="tab-1" name="tab-group-1" checked>
+            <label for="tab-1">水质信息</label>
+            <div class="content">
+                    <div class="column" style="width: 100%; display:flex; justify-content: center;  align-items: center; flex-direction:column;">
+                        <h2>实时数据展示</h2>
+                        <form action="/generate_water_chart" method="post">
+                            <!-- 第一个下拉框：选择第一列的不同数据 -->
+                            <label for="col1_select" style="background-color: transparent; border-color: transparent;">选择第一列的值：</label>
+                            <select id="col1_select" name="col1_select">
+                            {% for value in col1_options %}
+                            <option value="{{ value }}">{{ value }}</option>
+                            {% endfor %}
+                            </select>
+
+                            <!-- 第二个下拉框：选择列标题 -->
+                            <label for="header_select" style="background-color: transparent; border-color: transparent;">选择列标题：</label>
+                            <select id="header_select" name="header_select">
+                            {% for header in header_options %}
+                            <option value="{{ header }}">{{ header }}</option>
+                            {% endfor %}
+                            </select>
+                            <!-- 提交按钮 -->
+                            <button onclick="generateChart()">生成图表</button>
+                        </form>
+                        <!--显示表格-->
+                        <div class="table_container">
+                            {{ table | safe }}
+                            <!--上传数据按钮-->
+                            <a href="/upup">上传水质数据</a>
+                        </div>
+                    </div>
+            </div>
+        </div>
+
+        <div class="tab">
+            <input type="radio" id="tab-2" name="tab-group-1">
+            <label for="tab-2">鱼类信息</label>
+            <div class="content">
+                <div class="column" >
+                    <!-- 环状图 -->
+                     <div id="pieHuan" ></div>
+                    <!--提交鱼类数据-->
+                     <div class="fish_input_box">
+                         <h2 style="text-align:left;" >上传鱼类信息</h2>
+                         <form action="#" method="post" onsubmit="return validateForm(event)">
+                            <input type="text" id="upload_date" name="upload_date" placeholder="监测时间">
+                            <select id="species_select" name="species_select">
+                                <option value="Smelt">Smelt</option>
+                                <option value="Perch">Perch</option>
+                                <option value="Roach">Roach</option>
+                                <option value="Parkki">Parkki</option>
+                                <option value="Bream">Bream</option>
+                                <option value="Whitefish">Whitefish</option>
+                                <option value="Pike">Pike</option>
+                            </select>
+                             <input type="text" id="weight" name="weight" placeholder="重量(g)">
+                             <input type="text" id="length1" name="length1" placeholder="长度1(cm)">
+                             <input type="text" id="length2" name="length2"placeholder="长度2(cm)">
+                             <input type="text" id="length3" name="length3"placeholder="长度3(cm)">
+                             <input type="text" id="height" name="height" placeholder="高度(cm)">
+                             <input type="text" id="width" name="width" placeholder="宽度">
+                             <input type="text" id="num" name="num" placeholder="数量">
+
+                            <input type="submit" id="fish_submit_button" name="fish_submit_button" value="提交">
+                        </form>
+                     </div>
+                </div>
+                <div class="column">
+                    <a href="#" onclick="showPage('page1')" style="float: right; margin:1px;">尺寸</a>
+                    <a href="#" onclick="showPage('page2')" style="float: right; margin:1px;">重量</a>
+                    <div class="page" style="display:block;" id="page1">
+                         <div class="tabs">
+                            <div class="tab">
+                                <input type="radio" id="size_tab0" name="tab-group-2" checked >
+                                <label for="size_tab0">Smelt</label>
+                                <div class="content" >
+                                   <div class="fish_chart" id="size_chart0"></div>
+                                </div>
+                            </div>
+                            <div class="tab">
+                                <input type="radio" id="size_tab1" name="tab-group-2">
+                                <label for="size_tab1">Perch</label>
+                                <div class="content" >
+                                   <div class="fish_chart" id="size_chart1"></div>
+                                </div>
+                            </div>
+                            <div class="tab">
+                                <input type="radio" id="size_tab2" name="tab-group-2">
+                                <label for="size_tab2">Roach</label>
+                                <div class="content" >
+                                     <div class="fish_chart" id="size_chart2"></div>
+                                </div>
+                            </div>
+                            <div class="tab">
+                                <input type="radio" id="size_tab3" name="tab-group-2">
+                                <label for="size_tab3">Parkki</label>
+                                <div class="content" >
+                                    <div class="fish_chart" id="size_chart3"></div>
+                                </div>
+                            </div>
+                            <div class="tab">
+                                <input type="radio" id="size_tab4" name="tab-group-2">
+                                <label for="size_tab4">Bream</label>
+                                <div class="content" >
+                                    <div class="fish_chart" id="size_chart4"></div>
+                                </div>
+                            </div>
+                            <div class="tab">
+                                <input type="radio" id="size_tab5" name="tab-group-2">
+                                <label for="size_tab5">Whitefish</label>
+                                <div class="content" >
+                                    <div class="fish_chart" id="size_chart5"></div>
+                                </div>
+                            </div>
+                            <div class="tab">
+                                <input type="radio" id="size_tab6" name="tab-group-2">
+                                <label for="size_tab6">Pike</label>
+                                <div class="content" >
+                                    <div class="fish_chart" id="size_chart6"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="page" id="page2">
+                        <div class="tabs">
+                            <div class="tab">
+                                <input type="radio" id="fish_tab0" name="tab-group-3" checked>
+                                <label for="fish_tab0">Smelt</label>
+                                <div class="content" >
+                                   <div class="fish_chart" id="weight_chart0"></div>
+                                </div>
+                            </div>
+                            <div class="tab">
+                                <input type="radio" id="fish_tab1" name="tab-group-3">
+                                <label for="fish_tab1">Perch</label>
+                                <div class="content" >
+                                     <div class="fish_chart" id="weight_chart1"></div>
+                                </div>
+                            </div>
+                            <div class="tab">
+                                <input type="radio" id="fish_tab2" name="tab-group-3">
+                                <label for="fish_tab2">Roach</label>
+                                <div class="content" >
+                                    <div class="fish_chart" id="weight_chart2"></div>
+                                </div>
+                            </div>
+                             <div class="tab">
+                                <input type="radio" id="fish_tab3" name="tab-group-3">
+                                <label for="fish_tab3">Parkki</label>
+                                <div class="content" >
+                                    <div class="fish_chart" id="weight_chart3"></div>
+                                </div>
+                            </div>
+                            <div class="tab">
+                                <input type="radio" id="fish_tab4" name="tab-group-3">
+                                <label for="fish_tab4">Bream</label>
+                                <div class="content" >
+                                    <div class="fish_chart" id="weight_chart4"></div>
+                                </div>
+                            </div>
+                            <div class="tab">
+                                <input type="radio" id="fish_tab5" name="tab-group-3">
+                                <label for="fish_tab5">Whitefish</label>
+                                <div class="content" >
+                                    <div class="fish_chart" id="weight_chart5"></div>
+                                </div>
+                            </div>
+                            <div class="tab">
+                                <input type="radio" id="fish_tab6" name="tab-group-3">
+                                <label for="fish_tab6">Pike</label>
+                                <div class="content" >
+                                    <div class="fish_chart" id="weight_chart6"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+</body>
+<script src="https://cdn.staticfile.org/echarts/4.3.0/echarts.min.js"></script>
+ <script>
+ //---------------种类环形图-------------------------
+// Python 传递的原始数据
+var species_num = {{ species_num|tojson|safe }};
+// 将原始数据格式化为ECharts所需的格式
+var legend_data=[];
+var pie_data = [];
+var fish_sum=0;
+for (var i = 0; i < species_num.length; i++) {
+    legend_data.push(species_num[i][0]);
+    pie_data.push({'value': species_num[i][1], 'name': species_num[i][0]});
+    fish_sum+=species_num[i][1];
+}
+
+// 基于准备好的dom，初始化echarts实例
+var myChart = echarts.init(document.getElementById('pieHuan'));
+
+// 指定图表的配置项和数据
+var option = {
+    title: {
+        text: '鱼群数量总计',
+        subtext: '{a|'+'   '+fish_sum + '}尾',
+        itemGap: 10, //主副标题的间距
+
+        subtextStyle: {
+            rich: {
+                a: {
+                    fontSize: 35,
+                    fontWeight: 'bold',
+                    color: 'white',
+                    textBorderColor: '#00FFFF', // 文字边框颜色
+                    textBorderWidth: 1, // 文字边框宽度
+                    textShadowColor: '	#00CED1', // 文字阴影颜色
+                    textShadowBlur: 5, // 文字阴影模糊程度
+                    textShadowOffsetX: 3, // 文字阴影水平偏移
+                    textShadowOffsetY: 3, // 文字阴影垂直偏移
+                    align:'right'
+                }
+            }
+        },
+        left: '42%',
+        top:'31%',
+
+        textStyle: {
+            color: 'white', fontSize: 25,
+            lineHeight: "50", // 行高
+
+        }
+    }
+
+    ,tooltip: {
+        trigger: 'item'
+    }
+    ,legend: {
+        orient: 'vertical',
+        left: 'left',
+        data: legend_data,
+        textStyle: {color: 'white'}
+    }
+    ,series: [
+        {
+            name: '物种数量',
+            type: 'pie',
+            radius: ['50%','80%'],//内外半径
+            center: ['55%', '45%'], // 圆心在容器的位置
+            data: pie_data,
+            textStyle:{fontSize:20},
+            emphasis: {//悬停效果
+                itemStyle: {
+                    shadowBlur: 10,
+                    shadowOffsetX: 0,
+                    shadowColor: 'rgba(0, 0, 0, 0.5)'
+                }
+            }
+        }
+    ]
+};
+myChart.setOption(option);
+
+//----------------鱼体重量分布图-----------------
+//统一的图表样式
+var option = {
+    backgroundColor:'rgba(224,255,255,0.95)',
+    xAxis: {
+        data: xdata,
+    axisLine: {
+        lineStyle:{color: '#00008B'}
+    }
+    },
+    yAxis: {
+        axisLine: {lineStyle:{color: '#00008B'} },
+        type:'value',
+        min: 0, // 设置最小值
+        max: 35 // 设置最大值
+    },
+    series: [
+        {
+            data: ydata,
+            type: 'line',
+            smooth: true,
+            lineStyle: { color: '#00FFFF',width: 2},
+            areaStyle: {
+                opacity: 0.8,
+                color: new echarts.graphic.LinearGradient(
+                0, 0, 0, 1,
+                [
+                    {
+                    offset: 1,
+                    color: '#00FFFF'
+                    },
+                    {
+                    offset: 0,
+                    color: 'rgb(0, 122, 204)'
+                    }
+              ]
+            )},
+        }
+    ]
+};
+ //处理数据
+var fish_weight={{ fish_weight|tojson|safe }};
+for(var i=0;i<fish_weight.length;i++){
+    var xdata=[];
+    var ydata=[];
+    var name=fish_weight[i][0][0];
+    for(var j=1;j<fish_weight[i][0].length;j+=2) {
+        xdata.push(fish_weight[i][0][j]);
+        ydata.push(fish_weight[i][0][j+1]);
+    }
+
+    //修改option的数值data
+    option.xAxis.data=xdata;
+    option.series[0].data=ydata;
+    //初始化echarts实例
+    var myChart1 = echarts.init(document.getElementById('weight_chart'+i));
+    myChart1.setOption(option);
+}
+
+//---------------鱼的尺寸图--------------------------
+var fish_size={{ fish_size|tojson|safe }};
+for(var i=0;i<fish_size.length;i++){
+    var xdata=[];
+    var ydata=[];
+    var name=fish_size[i][0][0];
+    for(var j=1;j<fish_size[i][0].length;j+=2) {
+        xdata.push(fish_size[i][0][j]);
+        ydata.push(fish_size[i][0][j+1]);
+    }
+
+    //修改option的数值data
+    option.xAxis.data=xdata;
+    option.series[0].data=ydata;
+    //初始化echarts实例
+    var myChart2 = echarts.init(document.getElementById('size_chart'+i));
+    myChart2.setOption(option);
+}
+//---------------隐藏重量图或尺寸图--------------------------------
+function showPage(pageId) {
+    var pages = document.getElementsByClassName("page");
+    for (var i = 0; i < pages.length; i++) {
+        pages[i].style.display = "none";
+    }
+    document.getElementById(pageId).style.display = "block";
+}
+</script>
+<script>
+    //-----------------提交鱼类数据-----------------------
+     function validateForm(event) {
+        //判断是否有输入框为空
+        inputs.forEach(function(input) {
+                if (input.value.trim() === "") {
+                    var errorElement = document.getElementById("error_" + input.id);
+                    errorElement.textContent = input.name.charAt(0).toUpperCase() + input.name.slice(1) + " is required";
+                    return false;
+                }
+            });
+        return true;
+     }
+</script>
+
+
+</html>

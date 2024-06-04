@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <style>
+    body {
+    background: linear-gradient(#141e30, #243b55);
+      //background: url('https://cdn.pixabay.com/photo/2018/08/14/13/23/ocean-3605547_1280.jpg') no-repeat;
+      background-size: 100% 130%;
+    }
+
+    #register_box {
+      width: 20%;
+      height: 400px;
+      background-color: #00000060;
+      margin: auto;
+      margin-top: 10%;
+      text-align: center;
+      border-radius: 10px;
+      padding: 50px 50px;
+    }
+
+    h2 {
+      color: #ffffff90;
+      margin-top: 5%;
+    }
+    label {
+      color: #ffffff90;
+    }
+
+    #input-box {
+      margin-top: 5%;
+    }
+
+    span {
+      color: #fff;
+    }
+
+    input {
+      border: 0;
+      width: 60%;
+      font-size: 15px;
+      color: #fff;
+      background: transparent;
+      border-bottom: 2px solid #fff;
+      padding: 5px 10px;
+      outline: none;
+      margin-top: 10px;
+    }
+
+    button {
+      margin-top: 50px;
+      width: 60%;
+      height: 30px;
+      border-radius: 10px;
+      border: 0;
+      color: #fff;
+      text-align: center;
+      line-height: 30px;
+      font-size: 15px;
+      background-image: linear-gradient(to right, #30cfd0, #330867);
+    }
+
+    #sign_up {
+      margin-top: 45%;
+      margin-left: 60%;
+    }
+
+#mybox {
+  /* 使用 flex 布局 */
+  display: flex;
+  flex-direction: row; /* 水平方向排列 */
+  justify-content: space-around; /* 水平方向均匀分布 */
+  align-items: center; /* 垂直方向居中对齐 */
+}
+
+#mybox div {
+  display: flex;
+  flex-direction: row; /* 水平方向排列 */
+  align-items: center; /* 垂直方向居中对齐 */
+}
+
+#mybox div label {
+  font-size: 13px; /* 设置字体大小为 16 像素 */
+  display: inline-block; /* 将标签调整为行内块元素 */
+  margin-left: 4px; /* 添加一些间距，使其与 input 元素分开 */
+  white-space: nowrap; /* 防止文本换行 */
+}
+
+    a {
+      color: #b94648;
+    }
+
+  </style>
+</head>
+
+<body>
+  <form id="registrationForm" action="/register" method="POST">
+    <div id="register_box">
+       <h2>REGISTER</h2>
+      <div id="mybox">
+        <div>
+         <input type="radio" id="admin" name="register_type" value="0" />
+        <label>管理员</label>
+
+        <input type="radio" id="farmer" name="register_type" value="1" />
+        <label>养殖户</label>
+
+        <input type="radio" id="user" name="register_type" value="2" checked="true"/>
+        <label>普通用户</label>
+        </div>
+      </div>
+      <div id="input_box">
+        <input type="text" id="username" name="username" placeholder="请输入用户名">
+      </div>
+      <div class="input_box">
+        <input type="password" id="password" name="password" placeholder="请输入密码">
+      </div>
+      <div class="input_box">
+        <input type="password" id="confirm-password" name="confirm-password" placeholder="确认密码">
+        <span id="passwordMatchError" class="error-message" style="display:none;">Passwords do not match.</span>
+      </div>
+      <div class="input_box">
+        <input type="password" id="inviteCode" name="inviteCode" placeholder="邀请码">
+        <span id="inviteCodeError" class="error-message" style="display:none;">InviteCodeError.</span>
+      </div>
+      <button type="submit">注册</button><br>
+    </div>
+  </form>
+<script>
+   // 获取养殖户和普通用户选项
+  var adminOption = document.getElementById('admin');
+  var farmerOption = document.getElementById('farmer');
+  var userOption = document.getElementById('user');
+  var inviteCodeInput = document.getElementById('inviteCode');
+  var usernameInput = document.getElementById('username');
+   inviteCodeInput.style.visibility = 'hidden';
+  // 监听管理员选项的变化
+  adminOption.addEventListener('change', function () {
+      if (adminOption.checked) {
+          inviteCodeInput.style.visibility = 'hidden';
+          usernameInput.placeholder = '管理权限ID';
+      } else {
+          usernameInput.placeholder = '请输入用户名';
+          inviteCodeInput.style.visibility = 'visible'; // 当未选中养殖户时隐藏邀请码输入框
+          inviteCodeInput.placeholder = '邀请码';
+      }
+  });
+  // 监听养殖户选项的变化
+  farmerOption.addEventListener('change', function () {
+      if (farmerOption.checked) {
+          usernameInput.placeholder = '请输入用户名';
+          inviteCodeInput.style.visibility = 'visible'; // 显示邀请码输入框
+          inviteCodeInput.placeholder = '邀请码';
+      } else {
+          usernameInput.placeholder = '请输入用户名';
+          inviteCodeInput.style.visibility = 'hidden'; // 隐藏邀请码输入框
+      }
+  });
+
+  // 监听普通用户选项的变化
+  userOption.addEventListener('change', function () {
+      if (userOption.checked) {
+          usernameInput.placeholder = '请输入用户名';
+          inviteCodeInput.style.visibility = 'hidden'; // 当选中普通用户时隐藏邀请码输入框
+      }
+  });
+
+
+  // 检查密码和确认密码是否匹配;检查邀请码是否为123
+      document.getElementById('registrationForm').addEventListener('submit', function(event) {
+        var password = document.getElementById('password').value;
+        var confirmPassword = document.getElementById('confirm-password').value;
+        var passwordMatchError = document.getElementById('passwordMatchError');
+
+        var inviteCodeInput = document.getElementById('inviteCode');
+        var inviteCodeError = document.getElementById('inviteCodeError');
+        var inviteCodeValue = inviteCodeInput.value;
+
+        if(farmerOption.checked){
+          if(inviteCodeValue!=="123"){
+             inviteCodeError.style.display = 'block'; // 邀请码错误
+              event.preventDefault(); // 阻止表单提交
+          }
+          else{
+            inviteCodeError.style.display = 'none';
+          }
+        }
+        if (password !== confirmPassword) {
+          passwordMatchError.style.display = 'block';
+          event.preventDefault(); // Prevent form submission
+        } else {
+          passwordMatchError.style.display = 'none';
+        }
+      });
+</script>
+</body>
+</html>
