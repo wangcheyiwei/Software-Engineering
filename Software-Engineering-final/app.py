@@ -1,5 +1,5 @@
-from flask import Flask, render_template, request, redirect, session, jsonify, send_file, render_template_string
-from flask import Flask, url_for, jsonify
+from flask import Flask, render_template, request, redirect, session,jsonify,send_file,render_template_string
+from flask import Flask, url_for,jsonify
 #from flask_socketio import SocketIO, emit
 from flask import render_template
 import sqlite3
@@ -11,20 +11,15 @@ import threading
 import time
 from io import BytesIO
 from matplotlib.backends.backend_agg import FigureCanvasAgg
-
 import base64
 
 import os
 import pandas as pd
-from module_code import login_register_logout, underwater
 
 app = Flask(__name__)
 app.secret_key = 'your-secret-key'  # 设置用于会话加密的密钥
 
 #socketio = SocketIO(app)
-app.register_blueprint(underwater.underwater_bp)
-app.register_blueprint(login_register_logout.login_register_bp)
-
 
 # 创建数据库连接和表
 def create_database():
@@ -34,6 +29,48 @@ def create_database():
                  (username TEXT PRIMARY KEY, password TEXT, is_admin INTEGER)''')
     conn.commit()
     conn.close()
+
+
+# 注册用户
+def register_user(username, password):
+    conn = sqlite3.connect('users.db')
+    c = conn.cursor()
+    c.execute("INSERT INTO users (username, password) VALUES (?, ?)", (username, password))
+    conn.commit()
+    conn.close()
+
+
+def register_admin(username, password):
+    conn = sqlite3.connect('users.db')
+    c = conn.cursor()
+    c.execute("UPDATE admins SET password = ? WHERE manageID = ?", (password, username))
+    conn.commit()
+    conn.close()
+
+
+def register_farmer(username, password):
+    conn = sqlite3.connect('users.db')
+    c = conn.cursor()
+    c.execute("INSERT INTO farmers (username, password) VALUES (?, ?)", (username, password))
+    conn.commit()
+    conn.close()
+
+
+# 验证登录
+def login_user(username, password, user_type):
+    conn = sqlite3.connect('users.db')
+    c = conn.cursor()
+    if user_type == "0":
+        c.execute("SELECT password FROM admins WHERE manageID=?", (username,))
+    elif user_type == "1":
+        c.execute("SELECT password FROM farmers WHERE username=?", (username,))
+    elif user_type == "2":
+        c.execute("SELECT password FROM users WHERE username=?", (username,))
+    result = c.fetchone()
+    conn.close()
+    if result and result[0] == password:
+        return 0
+    return None
 
 
 # 设置用户为管理员
@@ -51,6 +88,76 @@ def index():
     return render_template('index.html')
 
 
+# 注册页面
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        register_type = request.form['register_type']
+
+        conn = sqlite3.connect('users.db')
+        c = conn.cursor()
+        if register_type == "0":
+            c.execute("SELECT manageID,password FROM admins WHERE manageID=?", (username,))
+            result = c.fetchone()
+
+            if result is None:
+                conn.close()
+                return "无管理权限"
+            elif result[1] is not None:  # password不为空
+                print("test")
+                conn.close()
+                return "该权限ID已注册"
+        elif register_type == "1":
+            c.execute("SELECT username FROM farmers WHERE username=?", (username,))
+        elif register_type == "2":
+            c.execute("SELECT username FROM users WHERE username=?", (username,))
+        result = c.fetchone()
+        conn.close()
+        if result:
+            return "该用户名已被注册，请选择其他用户名。"
+
+        if register_type == "0":
+            register_admin(username, password)
+        elif register_type == "1":
+            register_farmer(username, password)
+        elif register_type == "2":
+            register_user(username, password)
+        return redirect('/login')
+    return render_template('register_haha.html')
+
+
+# 登录页面
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        user_type = request.form['user_type']
+        res = login_user(username, password, user_type)
+        if res is not None:
+            session['username'] = username
+            session['user_type'] = user_type
+            if user_type == "0":
+                return redirect('/admin')
+            elif user_type == "1":
+                return redirect('/famer')
+            elif user_type == "2":
+                return redirect('/user')
+        else:
+            return "登录失败，请检查用户名和密码。"
+    return render_template('login_haha.html')
+
+
+# 用户注销
+@app.route('/logout')
+def logout():
+    session.pop('username', None)
+    session.pop('user_type', None)
+    return redirect('/')
+
+
 # 用户页面
 @app.route('/user')
 def user():
@@ -60,7 +167,41 @@ def user():
         return redirect('/login')
 
 
-# -------------------------------------------
+# ---------------------------------------
+# underwater 页面
+@app.route('/underwater')
+def underwater():
+    if 'username' in session:
+        # 读取Excel文件
+        df = pd.read_excel('data.xlsx')
+        # 获取第一列所有不同的数据
+        col1_options = df.iloc[:, 0].unique()
+        # 获取第一行的标题，去掉第一列的标题
+        header_options = df.columns[1:].tolist()
+        # 渲染模板并传递unique_values
+        # 读取.xlsx文件
+
+        dff = pd.read_excel('data.xlsx', header=0)
+        # 获取最后一行数据
+        data = dff.iloc[-1]
+
+        dff = pd.DataFrame(data)
+
+        # 将DataFrame转换为HTML表格
+        html_table = dff.to_html(index=True, header=False)
+
+        return render_template('underwater.html', col1_options=col1_options, header_options=header_options,
+                               table=html_table)
+
+
+
+
+
+
+    else:
+        return redirect('/login')
+
+
 # datacenter 页面
 @app.route('/datacenter')
 def datacenter():
@@ -68,6 +209,8 @@ def datacenter():
         return render_template('datacenter.html')
     else:
         return redirect('/login')
+
+
 
 
 # ---------------------------------------
@@ -195,6 +338,34 @@ def edit_user_info():
 
 # ---------------------------------------
 # ---------------------------------------
+# underwater 页面
+@app.route('/underwater_plus')
+def underwater_plus():
+    if 'username' in session:
+        # 读取Excel文件
+        df = pd.read_excel('data.xlsx')
+        # 获取第一列所有不同的数据
+        col1_options = df.iloc[:, 0].unique()
+        # 获取第一行的标题，去掉第一列的标题
+        header_options = df.columns[1:].tolist()
+        # 渲染模板并传递unique_values
+        # 读取.xlsx文件
+
+        dff = pd.read_excel('data.xlsx', header=0)
+        # 获取最后一行数据
+        data = dff.iloc[-1]
+
+        dff = pd.DataFrame(data)
+
+        # 将DataFrame转换为HTML表格
+        html_table = dff.to_html(index=True, header=False)
+
+
+        return render_template('underwater_plus.html', col1_options=col1_options, header_options=header_options,table=html_table)
+
+
+    else:
+        return redirect('/login')
 
 
 # datacenter 页面
@@ -229,6 +400,148 @@ def famer():
         return redirect('/login')
 
 
+# ---------------------------------------
+# ---------------------------------------
+# underwater 页面
+@app.route('/underwater__famer')
+def underwater_famer():
+    if 'username' in session:
+        # 读取Excel文件
+        df = pd.read_excel('data.xlsx')
+        # 获取第一列所有不同的数据
+        col1_options = df.iloc[:, 0].unique()
+        # 获取第一行的标题，去掉第一列的标题
+        header_options = df.columns[1:].tolist()
+        # 渲染模板并传递unique_values
+        # 读取.xlsx文件
+
+        dff = pd.read_excel('data.xlsx', header=0)
+        # 获取最后一行数据
+        data = dff.iloc[-1]
+
+        dff = pd.DataFrame(data)
+
+        # 将DataFrame转换为HTML表格
+        html_table = dff.to_html(index=True, header=False)
+
+        return render_template('underwater__famer.html', col1_options=col1_options, header_options=header_options,
+                               table=html_table)
+
+
+
+
+    else:
+        return redirect('/login')
+
+
+@app.route('/generate_chart', methods=['POST'])
+def generate_chart():
+    # 读取Excel文件
+    df = pd.read_excel('data.xlsx')
+    selected_col1_value = request.form.get('col1_select')
+    selected_header = request.form.get('header_select')
+
+    # 根据用户选择过滤数据
+    filtered_df = df[(df.iloc[:, 0] == selected_col1_value)]
+
+    # 创建图表
+    plt.figure()
+    filtered_df[selected_header].plot(kind='bar')  # 假设我们使用条形图
+    plt.title(f'Data for {selected_col1_value}')
+    plt.xlabel(selected_header)
+
+    # 将图表保存到内存中的IO对象
+    buf = BytesIO()
+    plt.savefig(buf, format='png')
+    buf.seek(0)
+
+    # 清空图表
+    plt.close()
+
+    # 返回图表的PNG数据
+    #return send_file(buf, mimetype='image/png')
+    return render_template('indexx.html')
+
+
+@app.route('/your-flask-route', methods=['POST'])
+def handle_form_data():
+    # 获取表单数据
+    col1_value = request.form['col1_select']
+    header_value = request.form['header_select']
+    df = pd.read_excel('data.xlsx')
+    columns = df.columns
+    column_index = columns.get_loc(header_value)
+
+
+    # 根据用户选择过滤数据
+    filtered_df = df[(df.iloc[:, 0] == col1_value)]
+    x = filtered_df.iloc[:, [0]]
+    y=filtered_df.iloc[:, [column_index]]
+
+
+    # 创建图表
+    #print(selected_columns_df)
+    x_data = x.values.tolist()
+    y_data = y.values.tolist()
+
+    # 打印二维列表
+    #print(data_without_index_header)
+    # 现在你可以使用这些值进行进一步的处理
+    print(f"Selected Column 1 Value: {col1_value}")
+    print(f"Selected Header Value: {header_value}")
+    length = len(x_data)
+    x_data = list(range(1, len(x_data) + 1))
+
+    # 返回响应
+    #return render_template('indexx.html')
+    return render_template_string('''
+           <!DOCTYPE html>
+           <html>
+           <head>
+               <title>Scatter Plot from NumPy Array</title>
+               <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+           </head>
+           <body>
+               <canvas id="scatterChart"></canvas>
+               <script>
+                   var xData = {{ x_data | safe }};
+                   var yData = {{ y_data | safe }};
+                   var dataLength = {{ length }};
+                   var ctx = document.getElementById('scatterChart').getContext('2d');
+                   var scatterChart = new Chart(ctx, {
+                       type: 'scatter',
+                       data: {
+                           datasets: [{
+                               label: 'My Scatter Data',
+                               data: xData.map((x, i) => ({x: x, y: yData[i]})).slice(0, dataLength),
+                               backgroundColor: 'rgba(0, 123, 255, 0.5)',
+                               borderColor: 'rgba(0, 123, 255, 1)',
+                               borderWidth: 1
+                           }]
+                       },
+                       options: {
+                           scales: {
+                               x: {
+                                   title: {
+                                       display: true,
+                                       text: 'X Axis'
+                                   }
+                               },
+                               y: {
+                                   title: {
+                                       display: true,
+                                       text: 'Y Axis'
+                                   }
+                               }
+                           }
+                       }
+                   });
+               </script>
+           </body>
+           </html>
+       ''', x_data=x_data, y_data=y_data, length=length)
+
+
 # datacenter 页面
 @app.route('/datacenter__famer')
 def datacenter_famer():
@@ -238,11 +551,13 @@ def datacenter_famer():
         return redirect('/login')
 
 
-# ----------------------------智能中心功能实现----------------------------
+
+
+
+#----------------------------智能中心功能实现----------------------------
 # 全局变量,用于存储最新的水质数据和气象数据
 latest_water_quality_data = None
 latest_weather_data = None
-
 
 # 定期读取水质数据 Excel 文件并更新全局变量的函数
 def update_water_quality_data():
@@ -254,6 +569,7 @@ def update_water_quality_data():
                 df = pd.read_excel('水质数据.xlsx', usecols=['水温（℃）', 'pH(无量纲)', '浊度（NTU）'])
                 if df.empty:
                     raise Exception("水质数据文件中没有数据！")
+                
 
                 latest_row = df.iloc[-1]
                 water_temperature = latest_row['水温（℃）']
@@ -300,7 +616,6 @@ weather_update_thread = threading.Thread(target=update_weather_data)
 weather_update_thread.daemon = True
 weather_update_thread.start()
 
-
 def get_water_quality_data():
     global latest_water_quality_data
     if latest_water_quality_data is not None:
@@ -308,15 +623,12 @@ def get_water_quality_data():
     else:
         raise Exception("Water quality data not available")
 
-
 def get_weather_data():
     global latest_weather_data
     if latest_weather_data is not None:
         return latest_weather_data
     else:
         raise Exception("Weather data not available")
-
-
 '''
 def get_weather_data():
     excel_file = './weather_data.xlsx'
@@ -333,227 +645,29 @@ def get_weather_data():
     else:
         raise Exception("文件不存在！")
 '''
-def get_water_quality_data1():
-    # 读取 Excel 文件中的必要参数
-    df = pd.read_excel('水质数据.xlsx')
-    latest_row = df.iloc[-1]
-    water_temperature = latest_row['水温（℃）']
-    ph = latest_row['pH(无量纲)']
-    dissolved_oxygen = latest_row['溶氧量(mg/L)']
-    permanganate_index = latest_row['高锰酸盐指数（mg/L）']
-    ammonia_nitrogen = latest_row['氨氮（mg/L）']
-    total_phosphorus = latest_row['总磷（mg/L）']
-    total_nitrogen = latest_row['总氮（mg/L）']
-    return water_temperature, ph, dissolved_oxygen, permanganate_index, ammonia_nitrogen, total_phosphorus, total_nitrogen
-
-# 环境质量标准
-quality_standards = {
-    "水温（℃）": [None, None, None, None, None],  # 需特殊处理
-    "pH(无量纲)": [9, 9, 9, 9, 9],
-    "溶氧量(mg/L)": [7.5, 6, 5, 3, 2],
-    "高锰酸盐指数（mg/L）": [2, 4, 6, 10, 15],
-    "氨氮（mg/L）": [0.15, 0.5, 1.0, 1.5, 2.0],
-    "总磷（mg/L）": [0.02, 0.1, 0.2, 0.3, 0.4],
-    "总氮（mg/L）": [0.2, 0.5, 1.0, 1.5, 2.0],
-    
-}
-
-def calculate_score(row):
-    score = 0
-    for parameter, thresholds in quality_standards.items():
-        value = row.get(parameter)
-        if value is None:
-            continue
-        if parameter == "水温（℃）":
-            # 水温特殊处理
-        
-            score += 3
-        elif parameter == "溶氧量(mg/L)":
-            if float(value) >= thresholds[0]:
-                score += 5
-            elif float(value) >= thresholds[1]:
-                score += 4
-            elif float(value) >= thresholds[2]:
-                score += 3
-            elif float(value) >= thresholds[3]:
-                score += 2
-            elif float(value) >= thresholds[4]:
-                score += 1
-            else:
-                score += 0
-            
-        elif parameter == "pH(无量纲)":
-            if float(value)>=6 and value<=9:
-                score += 5
-            else:
-                score+=-1
-
-
-
-        else:
-            # 其他参数按照标准处理
-            if float(value) <= thresholds[0]:
-                score += 5
-            elif float(value) <= thresholds[1]:
-                score += 4
-            elif float(value) <= thresholds[2]:
-                score += 3
-            elif float(value) <= thresholds[3]:
-                score += 2
-            elif float(value) <= thresholds[4]:
-                score += 1
-            else:
-                score += 0
-    return score
 
 # intelligentcenter 页面
 @app.route('/intelligentcenter_plus', methods=['GET', 'POST'])
 def intelligentcenter_plus():
     if 'username' in session:
-        # 获取传感器数据
+        #获取传感器数据
         try:
             temperature1, wind_direction1, wind_speed1, humidity1, air_quality1 = get_weather_data()
         except Exception as e:
             return f"Error getting weather data: {e}", 500
-
-        try:
-            water_temperature1, ph1, dissolved_oxygen, permanganate_index, ammonia_nitrogen, total_phosphorus, total_nitrogen = get_water_quality_data1()
-        except Exception as e:
-            return f"Error reading water quality data: {e}", 500
-        
 
         # 读取 Excel 文件中的水温、pH 值和浊度数据
         try:
              water_temperature,ph,turbidity=get_water_quality_data()
-        except Exception as e:
-            return f"Error reading water quality data: {e}", 500
-        
-             
-       
-        row_data = {
-            "水温（℃）": water_temperature1,
-            "pH(无量纲)": ph1,
-            "溶氧量(mg/L)": dissolved_oxygen,
-            "高锰酸盐指数（mg/L）": permanganate_index,
-            "氨氮（mg/L）": ammonia_nitrogen,
-            "总磷（mg/L）": total_phosphorus,
-            "总氮（mg/L）": total_nitrogen
-        }
-        
-        # 计算得分
-        score = calculate_score(row_data)
 
-        '''
-        water_temperature = latest_row['水温（℃）']
-        ph = latest_row['pH(无量纲)']
-        turbidity = latest_row['浊度（NTU）']
-
-        '''
-
-        # 从session中获取用户设置的阈值,如果不存在则设置默认值
-        water_temperature_threshold = session.get('water_temperature_threshold', 25.0)
-        ph_threshold = session.get('ph_threshold', 7.5)
-        turbidity_threshold = session.get('turbidity_threshold', 5.0)
-
-        if request.method == 'POST':
-            # 保存用户设置的新阈值到session
-            water_temperature_threshold = float(request.form['water_temperature_threshold'])
-            session['water_temperature_threshold'] = water_temperature_threshold
-            ph_threshold = float(request.form['ph_threshold'])
-            session['ph_threshold'] = ph_threshold
-            turbidity_threshold = float(request.form['turbidity_threshold'])
-            session['turbidity_threshold'] = turbidity_threshold
-
-        alarm_message = ''
-
-        if water_temperature > water_temperature_threshold or ph > ph_threshold or turbidity > turbidity_threshold:
-            alarm_message = '警告:部分环境指标超出安全范围!'
-
-        return render_template('intelligentcenter_plus.html', water_temperature=water_temperature, ph=ph,
-                               turbidity=turbidity,
-                               alarm_message=alarm_message, water_temperature_threshold=water_temperature_threshold,
-                               ph_threshold=ph_threshold, turbidity_threshold=turbidity_threshold,
-                               temperature=temperature1,
-                               wind_direction=wind_direction1,
-                               wind_speed=wind_speed1,
-                               humidity=humidity1,
-                               air_quality=air_quality1,score=score)
-    else:
-        return redirect('/login')
-
-
-@app.route('/intelligentcenter')
-def intelligentcenter():
-    if 'username' in session:
-        try:
-            water_temperature1, ph1, dissolved_oxygen, permanganate_index, ammonia_nitrogen, total_phosphorus, total_nitrogen = get_water_quality_data1()
-        except Exception as e:
-            return f"Error reading water quality data: {e}", 500
-
-        row_data = {
-            "水温（℃）": water_temperature1,
-            "pH(无量纲)": ph1,
-            "溶氧量(mg/L)": dissolved_oxygen,
-            "高锰酸盐指数（mg/L）": permanganate_index,
-            "氨氮（mg/L）": ammonia_nitrogen,
-            "总磷（mg/L）": total_phosphorus,
-            "总氮（mg/L）": total_nitrogen
-        }
-        
-        # 计算得分
-        score = calculate_score(row_data)
-
-        temperature1, wind_direction1, wind_speed1, humidity1, air_quality1 = get_weather_data()
-        return render_template('intelligentcenter.html', temperature=temperature1,
-                               wind_direction=wind_direction1,
-                               wind_speed=wind_speed1,
-                               humidity=humidity1,
-                               air_quality=air_quality1,score=score)
-    else:
-        return redirect('/login')
-
-
-# intelligentcenter 页面
-@app.route('/intelligentcent_famer', methods=['GET', 'POST'])
-def intelligentcent_famer():
-    if 'username' in session:
-        # 获取传感器数据
-        try:
-            temperature1, wind_direction1, wind_speed1, humidity1, air_quality1 = get_weather_data()
-        except Exception as e:
-            return f"Error getting weather data: {e}", 500
-
-        # 读取 Excel 文件中的水温、pH 值和浊度数据
-        try:
-            water_temperature, ph, turbidity = get_water_quality_data()
-
-            '''
+             '''
             df = pd.read_excel('水质数据.xlsx', usecols=['水温（℃）', 'pH(无量纲)', '浊度（NTU）'])
             latest_row = df.iloc[-1]
             '''
 
         except Exception as e:
             return f"Error reading water quality data: {e}", 500
-
-        try:
-            water_temperature1, ph1, dissolved_oxygen, permanganate_index, ammonia_nitrogen, total_phosphorus, total_nitrogen = get_water_quality_data1()
-        except Exception as e:
-            return f"Error reading water quality data: {e}", 500
-
-        row_data = {
-            "水温（℃）": water_temperature1,
-            "pH(无量纲)": ph1,
-            "溶氧量(mg/L)": dissolved_oxygen,
-            "高锰酸盐指数（mg/L）": permanganate_index,
-            "氨氮（mg/L）": ammonia_nitrogen,
-            "总磷（mg/L）": total_phosphorus,
-            "总氮（mg/L）": total_nitrogen
-        }
         
-        # 计算得分
-        score = calculate_score(row_data)
-
-
         '''
         water_temperature = latest_row['水温（℃）']
         ph = latest_row['pH(无量纲)']
@@ -575,28 +689,61 @@ def intelligentcent_famer():
             turbidity_threshold = float(request.form['turbidity_threshold'])
             session['turbidity_threshold'] = turbidity_threshold
 
+       
         alarm_message = ''
 
         if water_temperature > water_temperature_threshold or ph > ph_threshold or turbidity > turbidity_threshold:
             alarm_message = '警告:部分环境指标超出安全范围!'
 
-        return render_template('intelligentcent_famer.html', water_temperature=water_temperature, ph=ph,
-                               turbidity=turbidity,
+        return render_template('intelligentcenter_plus.html', water_temperature=water_temperature, ph=ph, turbidity=turbidity,
                                alarm_message=alarm_message, water_temperature_threshold=water_temperature_threshold,
-                               ph_threshold=ph_threshold, turbidity_threshold=turbidity_threshold,
-                               temperature=temperature1,
+                               ph_threshold=ph_threshold, turbidity_threshold=turbidity_threshold,temperature=temperature1,
                                wind_direction=wind_direction1,
                                wind_speed=wind_speed1,
                                humidity=humidity1,
-                               air_quality=air_quality1,score=score)
+                               air_quality=air_quality1)
+    else:
+        return redirect('/login')
+
+@app.route('/intelligentcenter')
+def intelligentcenter():
+    if 'username' in session:
+        temperature1, wind_direction1, wind_speed1, humidity1, air_quality1 = get_weather_data()
+        return render_template('intelligentcenter.html',temperature=temperature1,
+                               wind_direction=wind_direction1,
+                               wind_speed=wind_speed1,
+                               humidity=humidity1,
+                               air_quality=air_quality1)
     else:
         return redirect('/login')
 
 
-# ------------------------------智能中心功能实现到此结束-----------------------------
+# intelligentcenter 页面
+@app.route('/intelligentcent_famer')
+def intelligentcent_famer():
+    if 'username' in session:
+        return render_template('intelligentcent_famer.html')
+    else:
+        return redirect('/login')
+
+# upup 页面
+@app.route('/upup')
+def upup():
+    if 'username' in session:
+        return render_template('upup.html')
+    else:
+        return redirect('underwater_plus')
+
+
+ 
+
 
 
 if __name__ == '__main__':
     create_database()
     app.run(debug=True)
-    # socketio.run(app)
+    #socketio.run(app)
+  
+
+
+#------------------------------智能中心功能实现到此结束-----------------------------
